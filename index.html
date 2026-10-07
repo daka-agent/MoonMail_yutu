@@ -224,6 +224,8 @@
       </div>
 
       <div class="setting-group" id="webllmSettings" style="display:none;">
+        <p class="hint env-notice" id="webllmEnvNotice" style="display:none;"></p>
+
         <label>本地模型</label>
         <select id="webllmModel">
           <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen2.5-1.5B-Instruct（推荐，中文好，速度快）</option>
@@ -333,27 +335,7 @@ event|3|\u73A9\u5BB6\u4E0B\u5468\u8981\u53BB\u65C5\u884C
       `),document.body.appendChild(n),requestAnimationFrame(()=>{n.classList.add("show")}),setTimeout(()=>{n.classList.remove("show"),setTimeout(()=>n.remove(),300)},5e3)}async handleSettingsSave(e){e.sound&&e.sound.enabled?this.soundManager.enable():this.soundManager.disable();try{this.aiProvider&&await this.aiProvider.destroy(),await this.initAI()?(this.chatUI.addMessage("system","AI \u5DF2\u8FDE\u63A5\uFF0C\u7389\u5154\u9192\u6765\u5566\uFF5E"),this.chatUI.setInputEnabled(!0),this.yutu.visitCount<=1&&this.yutu.conversationHistory.length===0&&this.showWelcome()):this.chatUI.addMessage("system","AI \u8FDE\u63A5\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5\u8BBE\u7F6E")}catch(t){this.chatUI.addMessage("system",`\u8BBE\u7F6E\u5931\u8D25: ${t.message}`)}}async handleDownloadModel(e,t="mirror"){let s={"Qwen2.5-1.5B-Instruct-q4f16_1-MLC":{wasmFile:"Qwen2-1.5B-Instruct-q4f16_1-ctx4k_cs1k-webgpu.wasm",vramMB:1630},"Qwen2-1.5B-Instruct-q4f32_1-MLC":{wasmFile:"Qwen2-1.5B-Instruct-q4f32_1-ctx4k_cs1k-webgpu.wasm",vramMB:1889},"Llama-3.2-1B-Instruct-q4f16_1-MLC":{wasmFile:"Llama-3.2-1B-Instruct-q4f16_1_cs1k-webgpu.wasm",vramMB:879}},i=s[e]||s["Qwen2.5-1.5B-Instruct-q4f16_1-MLC"],n=e,a="v0_2_48";if(!("gpu"in navigator)){this.settingsUI.updateDownloadProgress(0,"\u274C \u5F53\u524D\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 WebGPU"),this.settingsUI.setDownloadButtonState("error","\u6D4F\u89C8\u5668\u4E0D\u652F\u6301");return}this.settingsUI.setDownloadButtonState("downloading"),this.settingsUI.updateDownloadProgress(0,"\u6B63\u5728\u52A0\u8F7D WebLLM \u5E93...");try{let r;if(window.webllm)r=window.webllm;else{let w=new Promise((d,H)=>setTimeout(()=>H(new Error("\u52A0\u8F7D WebLLM \u5E93\u8D85\u65F6\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC")),3e4)),f=import("https://esm.sh/@mlc-ai/web-llm");r=await Promise.race([f,w]),window.webllm=r}if(this.settingsUI.updateDownloadProgress(2,"WebLLM \u5E93\u5DF2\u52A0\u8F7D"),await new Promise(w=>setTimeout(w,200)),!r.CreateMLCEngine)throw new Error("WebLLM \u5E93\u52A0\u8F7D\u4E0D\u5B8C\u6574");this.settingsUI.updateDownloadProgress(3,"\u5F00\u59CB\u4E0B\u8F7D\u6A21\u578B\uFF08\u53EF\u80FD\u9700\u8981\u51E0\u5206\u949F\uFF09...");let l,u,p;t==="official"?(l=`https://huggingface.co/mlc-ai/${n}`,u=`https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/${a}/${i.wasmFile}`,p="\u5B98\u65B9\u6E90"):(l=`https://hf-mirror.com/mlc-ai/${n}`,u=`https://cdn.jsdelivr.net/gh/mlc-ai/binary-mlc-llm-libs@main/web-llm-models/${a}/${i.wasmFile}`,p="\u56FD\u5185\u955C\u50CF");let I={cacheBackend:"cache",model_list:[{model:l,model_id:n,model_lib:u,vram_required_MB:i.vramMB,low_resource_required:!0,overrides:{context_window_size:4096}}]},y=new Promise((w,f)=>setTimeout(()=>f(new Error(`\u4E0B\u8F7D\u8D85\u65F6\uFF08${p}\uFF09`)),3e5)),M=Date.now(),S=setInterval(()=>{Date.now()-M>15e3&&this.settingsUI.updateDownloadProgress(-1,`\u26A0\uFE0F \u4E0B\u8F7D\u4F3C\u4E4E\u5361\u4F4F\u4E86\uFF08${p}\uFF09`)},5e3),N=r.CreateMLCEngine(n,{appConfig:I,initProgressCallback:w=>{M=Date.now();let f=w.progress?Math.max(3,Math.min(100,w.progress*100)):3,d=w.text||`${f.toFixed(1)}%`;d.includes("Fetching")||d.includes("fetching")?d=`\u4E0B\u8F7D\u4E2D... ${f.toFixed(1)}%`:d.includes("Loading")||d.includes("loading")?d=`\u52A0\u8F7D\u4E2D... ${f.toFixed(1)}%`:f>=99?d="\u5373\u5C06\u5B8C\u6210...":d.length>40&&(d=`\u4E0B\u8F7D\u4E2D... ${f.toFixed(1)}%`),this.settingsUI.updateDownloadProgress(f,d)}}),v=await Promise.race([N,y]);clearInterval(S),this.settingsUI.updateDownloadProgress(100,"\u2705 \u4E0B\u8F7D\u5B8C\u6210\uFF01"),this.settingsUI.setDownloadButtonState("done","\u5DF2\u4E0B\u8F7D \u2713"),window.__webllmEngine=v,window.__webllmModelName=n,window.__webllmAppConfig=I,setTimeout(()=>{this.settingsUI.hideDownloadProgress()},2e3)}catch(r){console.error("\u4E0B\u8F7D\u6A21\u578B\u5931\u8D25:",r);let l=r.message||"\u672A\u77E5\u9519\u8BEF";l.includes("WebAssembly")||l.includes("instantiate")||l.includes("tvm")||l.includes("threading")?l="\u6D4F\u89C8\u5668\u8FD0\u884C\u65F6\u521D\u59CB\u5316\u5931\u8D25\uFF0C\u8BF7\u5237\u65B0\u9875\u9762\u540E\u91CD\u8BD5":l.includes("network")||l.includes("fetch")||l.includes("Failed to fetch")?l=t==="mirror"?"\u955C\u50CF\u7AD9\u8FDE\u63A5\u5931\u8D25\uFF0C\u53EF\u5C1D\u8BD5\u5207\u6362\u4E3A\u5B98\u65B9\u6E90":"\u5B98\u65B9\u6E90\u8FDE\u63A5\u5931\u8D25\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u73AF\u5883":l.includes("GPU")||l.includes("WebGPU")?l="\u6D4F\u89C8\u5668\u4E0D\u652F\u6301 WebGPU":(l.includes("\u8D85\u65F6")||l.includes("timeout"))&&(l=t==="mirror"?"\u955C\u50CF\u6E90\u4E0B\u8F7D\u8D85\u65F6\uFF0C\u53EF\u5C1D\u8BD5\u5207\u6362\u4E3A\u5B98\u65B9\u6E90":"\u5B98\u65B9\u6E90\u4E0B\u8F7D\u8D85\u65F6\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u8FDE\u63A5"),this.settingsUI.updateDownloadProgress(0,`\u274C ${l}`),this.settingsUI.setDownloadButtonState("error","\u91CD\u65B0\u4E0B\u8F7D"),setTimeout(()=>{this.settingsUI.hideDownloadProgress(),this.settingsUI.setDownloadButtonState("idle")},8e3)}}};window.addEventListener("DOMContentLoaded",()=>{new O});})();
 </script>
 
-  <!-- 注册 Service Worker：启用跨域隔离，让 WebLLM 的 SharedArrayBuffer 可用 -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      const isCoopCOEP = window.crossOriginIsolated;
-      if (!isCoopCOEP) {
-        navigator.serviceWorker.register('coi-serviceworker.js').then(reg => {
-          console.log('COI Service Worker 注册成功');
-          if (reg.active && !navigator.serviceWorker.controller) {
-            location.reload();
-          }
-        }).catch(err => console.warn('Service Worker 注册失败:', err));
-
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing) {
-            refreshing = true;
-            location.reload();
-          }
-        });
-      }
-    }
-  </script>
+  <!-- 本地推理要用到浏览器的共享内存，得由站点自己发两个响应头才放行。
+       dakazhang.com 镜像已在 nginx 配好；GitHub Pages 配不了，那边会自动降级并引导过去。 -->
 </body>
 </html>
